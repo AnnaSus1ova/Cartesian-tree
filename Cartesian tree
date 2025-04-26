@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -116,3 +118,22 @@ public:
         return false;
     }
 };
+
+int main() {
+    Treap treap;
+    
+    treap.insert(5);
+    treap.insert(3);
+    treap.insert(7);
+    treap.insert(5); // Дубликат
+    
+    cout << "Total elements: " << treap.count() << endl; // 4
+    
+    treap.remove(5);
+    cout << "After removing one 5: " << treap.count() << endl; // 3
+    
+    cout << "Contains 7? " << (treap.contains(7) ? "Yes" : "No") << endl;
+    cout << "Contains 5? " << (treap.contains(5) ? "Yes" : "No") << endl;
+    
+    return 0;
+}
