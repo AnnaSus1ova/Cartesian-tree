@@ -1,0 +1,120 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+struct Node {
+    int value;
+    int priority;
+    int size;
+    Node* left;
+    Node* right;
+    
+    Node(int val) : value(val), priority(rand()), size(1), left(nullptr), right(nullptr) {}
+};
+
+class Treap {
+private:
+    Node* root;
+    
+    void updateSize(Node* node) {
+        if (node) {
+            node->size = 1 + getSize(node->left) + getSize(node->right);
+        }
+    }
+    
+    int getSize(Node* node) const {
+        return node ? node->size : 0;
+    }
+    
+    void split(Node* node, int value, Node*& left, Node*& right) {
+        if (!node) {
+            left = right = nullptr;
+            return;
+        }
+        
+        if (node->value <= value) {
+            split(node->right, value, node->right, right);
+            left = node;
+        } else {
+            split(node->left, value, left, node->left);
+            right = node;
+        }
+        updateSize(node);
+    }
+    
+    Node* merge(Node* left, Node* right) {
+        if (!left) return right;
+        if (!right) return left;
+        
+        if (left->priority > right->priority) {
+            left->right = merge(left->right, right);
+            updateSize(left);
+            return left;
+        } else {
+            right->left = merge(left, right->left);
+            updateSize(right);
+            return right;
+        }
+    }
+    
+    void clear(Node* node) {
+        if (node) {
+            clear(node->left);
+            clear(node->right);
+            delete node;
+        }
+    }
+    
+public:
+    Treap() : root(nullptr) {
+        srand(time(nullptr));
+    }
+    
+    ~Treap() {
+        clear(root);
+    }
+    
+    void insert(int value) {
+        Node* left = nullptr;
+        Node* right = nullptr;
+        split(root, value, left, right);
+        root = merge(merge(left, new Node(value)), right);
+    }
+    
+    void remove(int value) {
+        Node* left = nullptr;
+        Node* mid = nullptr;
+        Node* right = nullptr;
+        
+        split(root, value - 1, left, mid);
+        split(mid, value, mid, right);
+        
+        if (mid) {
+            Node* temp = mid;
+            mid = merge(mid->left, mid->right);
+            delete temp;
+        }
+        
+        root = merge(merge(left, mid), right);
+    }
+    
+    int count() const {
+        return getSize(root);
+    }
+    
+    bool contains(int value) const {
+        Node* current = root;
+        while (current) {
+            if (current->value == value) {
+                return true;
+            } else if (value < current->value) {
+                current = current->left;
+            } else {
+                current = current->right;
+            }
+        }
+        return false;
+    }
+};
